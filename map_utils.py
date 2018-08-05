@@ -59,6 +59,7 @@ class Map:
         generator = Map_generator(self.size)
         my_terrain = generator.meshgrid_combine(reps=1000)
         generator.colormap(my_terrain)
+        return my_terrain
 
 if __name__ == "__main__":
     # Test map
