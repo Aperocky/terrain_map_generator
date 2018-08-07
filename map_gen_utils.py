@@ -69,8 +69,78 @@ class Map_generator:
         # bounds = [-10, -2, 0, 2.5, 4.5, 10]
         norm = colors.Normalize(-10, 10, custmap.N)
         # img = plt.imshow(grid, cmap=cmap, norm=norm)
-        img = plt.imshow(grid, interpolation="hamming", cmap=custmap, norm=norm)
+        img = plt.imshow(grid, interpolation="nearest", cmap=custmap, norm=norm)
         plt.show()
+
+class Rivers:
+
+    def __init__(self, altmap):
+        self.altmap = altmap
+
+    def shift_map(self):
+        master = self.altmap
+        # Create edge slides
+        top = np.asarray([master[0]])
+        bottom = np.asarray([master[-1]])
+        left = np.asarray([master[:, 0]]).T
+        right = np.asarray([master[:, -1]]).T
+        # Create shift maps
+        north = np.concatenate((top, master[:-1, :]), axis=0)
+        south = np.concatenate((master[1:, :], bottom), axis=0)
+        west = np.concatenate((left, master[:, :-1]), axis=1)
+        east = np.concatenate((master[:, 1:], right), axis=1)
+        self.north = north
+        self.south = south
+        self.west = west
+        self.east = east
+
+    # Establish flow patterns
+    def flow(self):
+        # Empty river map for plotting later:
+        riverpos = np.zeros(self.altmap.shape)
+        self.riverpos = riverpos
+        flowmap = np.empty(self.altmap.shape, dtype=tuple)
+        for i in range(self.altmap.shape[0]):
+            for j in range(self.altmap.shape[1]):
+                if self.altmap[i, j] < 0:
+                    myres = (0,0)
+                    flowmap[i, j] = myres
+                    continue
+                dn = self.altmap[i, j] - self.north[i, j]
+                de = self.altmap[i, j] - self.east[i, j]
+                ds = self.altmap[i, j] - self.south[i, j]
+                dw = self.altmap[i, j] - self.west[i, j]
+                mylist = [dn, de, ds, dw]
+                if max(mylist) < 0:
+                    myres = (0, 0)
+                else:
+                    myres = [(-1, 0), (0, 1), (1, 0), (0, -1)][np.argmax(mylist)]
+                flowmap[i, j] = myres
+        self.flowmap = flowmap
+        return flowmap
+
+    def run(self):
+        self.shift_map()
+        self.flow()
+        self.point_flow((50,50))
+        self.point_flow((25,25))
+        self.point_flow((75,75))
+
+    # River flow from source
+    def point_flow(self, source):
+        # source: tuple (i, j)
+        direction = self.flowmap[source]
+        print(source)
+        while not direction == (0,0):
+            source = tuple(map(sum, zip(source, direction)))
+            print(source)
+            try:
+                me = self.riverpos[source]
+            except IndexError:
+                return
+            direction = self.flowmap[source]
+            self.riverpos[source] = 1
+        # This appends everything to riverflow
 
 if __name__ == "__main__":
     my_map = Map_generator(100)
@@ -80,4 +150,11 @@ if __name__ == "__main__":
     print(grid.min())
     # print(grid)
     my_map.colormap(grid)
+
+    river = Rivers(grid)
+    river.run()
+    print(river.flowmap)
+    print(river.riverpos.sum())
+    plt.imshow(river.riverpos)
+    plt.show()
     

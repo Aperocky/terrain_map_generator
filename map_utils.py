@@ -29,6 +29,9 @@ class Location:
     def assign_terrain(self, terrain):
         self.terrain = terrain
 
+    def assign_height(self, height):
+        self.height = height
+
 class Map:
 
     """
