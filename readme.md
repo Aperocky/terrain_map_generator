@@ -4,14 +4,12 @@ This is a map generator for pretty discrete altitude map.
 
 usage:
 
-`from map_utils import Map`
+`python map_gen_utils.py [Name_of_Wonderland(str)], [size(int)], [climate(float)]`
 
-`my_map = Map(100)`
+This will create a folder in maps/ which will contain numpy file of altitude map, water flow map, and a pretty map image. Each new generation will be completely random - more tweakables are within code.
 
-`my_map.terrain_gen()`
-
-Pretty map images follow (Matplotlib required) with numpy array of heights! Fully randomized with multiple bivariate normal distributions.
+Dependencies: `Scipy, Matplolib, Numpy`
 
 Coming up:
 
-River simulation.
+Lake simulation
